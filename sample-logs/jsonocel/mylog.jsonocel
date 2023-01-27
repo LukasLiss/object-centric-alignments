@@ -1,0 +1,126 @@
+{
+    "ocel:global-log": {
+    "ocel:attribute-names": [],
+    "ocel:object-types": [
+    "T"
+    ],
+    "ocel:version": [
+    "1.0"
+    ],
+    "ocel:ordering": [
+    "timestamp"
+    ]
+    },
+    "ocel:events": {
+    "0": {
+    "ocel:activity": "t0",
+    "ocel:timestamp": "2022-12-05T10:51:41+00:00",
+    "ocel:omap": [
+    "i1"
+    ],
+    "ocel:vmap": {}
+    },
+    "1": {
+    "ocel:activity": "t1",
+    "ocel:timestamp": "2022-12-06T10:51:41+00:00",
+    "ocel:omap": [
+    "i1"
+    ],
+    "ocel:vmap": {}
+    },
+    "2": {
+    "ocel:activity": "t2",
+    "ocel:timestamp": "2022-12-07T10:51:41+00:00",
+    "ocel:omap": [
+    "i1"
+    ],
+    "ocel:vmap": {}
+    },
+    "3": {
+    "ocel:activity": "t3",
+    "ocel:timestamp": "2022-12-08T10:51:41+00:00",
+    "ocel:omap": [
+    "i1"
+    ],
+    "ocel:vmap": {}
+    },
+    "4": {
+    "ocel:activity": "t4",
+    "ocel:timestamp": "2022-12-09T10:51:41+00:00",
+    "ocel:omap": [
+    "i1"
+    ],
+    "ocel:vmap": {}
+    },
+    "5": {
+    "ocel:activity": "t5",
+    "ocel:timestamp": "2022-12-10T10:51:41+00:00",
+    "ocel:omap": [
+    "i1"
+    ],
+    "ocel:vmap": {}
+    },
+    "6": {
+    "ocel:activity": "t6",
+    "ocel:timestamp": "2022-12-11T10:51:41+00:00",
+    "ocel:omap": [
+    "i1"
+    ],
+    "ocel:vmap": {}
+    },
+    "7": {
+    "ocel:activity": "t7",
+    "ocel:timestamp": "2022-12-12T10:51:41+00:00",
+    "ocel:omap": [
+    "i1"
+    ],
+    "ocel:vmap": {}
+    },
+    "8": {
+    "ocel:activity": "t8",
+    "ocel:timestamp": "2022-12-13T10:51:41+00:00",
+    "ocel:omap": [
+    "i1"
+    ],
+    "ocel:vmap": {}
+    },
+    "9": {
+    "ocel:activity": "t9",
+    "ocel:timestamp": "2022-12-14T10:51:41+00:00",
+    "ocel:omap": [
+    "i1"
+    ],
+    "ocel:vmap": {}
+    },
+    "10": {
+    "ocel:activity": "xt10",
+    "ocel:timestamp": "2022-12-15T10:51:41+00:00",
+    "ocel:omap": [
+    "i1"
+    ],
+    "ocel:vmap": {}
+    },
+    "11": {
+    "ocel:activity": "xt11",
+    "ocel:timestamp": "2022-12-16T10:51:41+00:00",
+    "ocel:omap": [
+    "i1"
+    ],
+    "ocel:vmap": {}
+    },
+    "12": {
+        "ocel:activity": "xt12",
+        "ocel:timestamp": "2022-12-17T10:51:41+00:00",
+        "ocel:omap": [
+        "i1"
+        ],
+        "ocel:vmap": {}
+        }
+        },
+    "ocel:objects": {
+      "i1": {
+    "ocel:type": "T",
+    "ocel:ovmap": {}
+    }
+    }
+    }
