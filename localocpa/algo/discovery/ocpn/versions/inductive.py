@@ -9,8 +9,8 @@ from pm4py.objects.conversion.dfg import converter as dfg_converter
 from pm4py.algo.conformance.tokenreplay import algorithm as tr_factory
 from pm4py.visualization.petrinet.util import performance_map
 from pm4py.statistics.variants.log import get as variants_module
-from pm4py.algo.filtering.log.paths import paths_filter
-from pm4py.algo.filtering.log.variants import variants_filter
+# from pm4py.algo.filtering.log.paths import paths_filter
+# from pm4py.algo.filtering.log.variants import variants_filter
 from pm4py.algo.filtering.log.attributes import attributes_filter
 from pm4py.objects.petri.petrinet import PetriNet, Marking
 from pm4py.objects.petri.utils import add_arc_from_to

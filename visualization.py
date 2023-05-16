@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from matplotlib.path import Path
 from matplotlib.transforms import Bbox
 import matplotlib.patches as patches
+import matplotlib.cm as cm
 from alignment import Move, Alignment, DefinedModelMove, SynchronousMove, LogMove
 from typing import List, Set, Dict, Tuple, Optional
 import re
@@ -18,10 +19,16 @@ TEXT_BUFFER_TOP = 0.1
 TEXT_BUFFER_LEFT = 0.3
 TEXT_BUFFER_RIGHT = 0.1
 
-SYNC_COLOR = "green"
-MODEL_MOVE_COLOR = "orange"
-LOG_MOVE_COLOR = "red"
-DEFAULT_COLOR = "gray"
+SYNC_LINESTYLE = 'solid'
+MODEL_MOVE_LINESTYLE = (0, (1,1))
+LOG_MOVE_LINESTYLE = (0,(5,1))
+DEFAULT_LINESTYLE = "solid"
+
+# SYNC_COLOR = '#000000'
+# MODEL_MOVE_COLOR = "orange"
+# LOG_MOVE_COLOR = "red"
+# DEFAULT_COLOR = "white"
+
 
 
 def use_fontsize_that_fits(text, width, height, fig=None, ax=None):
@@ -49,6 +56,37 @@ def use_fontsize_that_fits(text, width, height, fig=None, ax=None):
             text.set_fontsize(text.get_fontsize()-1)
             use_fontsize_that_fits(text, width, height, fig, ax)
 
+def calculate_object_colors(alignment: Alignment):
+    object_colors = dict()
+
+    if alignment.object_types == None:
+        # print("No OT")
+        pass
+
+    else:
+        # print("Has OT")
+        # print(alignment.object_types)
+        object_by_type = dict()
+        for type, object in alignment.object_types:
+            object_by_type.setdefault(type, [])
+            object_by_type[type].append(object)
+        color_map_names = ["Greens", "Blues", "Purples", "Reds", "Oranges"]
+        for count, type in enumerate(object_by_type.keys()):
+            cmap = cm.get_cmap(color_map_names[count % len(color_map_names)])
+            total_obj_in_type = len(object_by_type[type])
+            for count, obj in enumerate(object_by_type[type]):
+                object_colors[obj] = cmap(1 - (((count+1) / total_obj_in_type) * 0.75 + 0.125))
+                # print(f"Obj: {obj} Color: {object_colors[obj]}")
+
+    return object_colors
+
+def id_of_earliest_obj(move: Move, objects):
+    earliest_id = None
+    for obj in move.objects:
+        this_id = objects.index(obj)
+        if earliest_id == None or this_id < earliest_id:
+            earliest_id = this_id
+    return earliest_id
 
 def draw_line(start, end, fig, ax):
     verts = [start, end]
@@ -60,15 +98,43 @@ def draw_line(start, end, fig, ax):
     ax.add_patch(patch)
 
 
-def draw_move(move: Move, start_x: int, start_y: int, color: str, abbreviations: Dict[str, str], fig, ax, renderer) \
+def draw_move(move: Move, object_colors, start_x: int, start_y: int, linestyle: str, abbreviations: Dict[str, str], fig, ax, renderer) \
         -> Tuple[int, Dict[Move, Tuple[int, int]], Dict[Move, Tuple[int, int]]]:
     '''
     Visualizes a Move to a given mathplootlib plot.
     :param move: Move that should be visualized.
+    :param object_colors: Dictonary with objects as keys and colors as values.
     :param start_x: Xcoordinate of upper left corner of the box that will represent the move.
     :param start_y: Y coordinate of upper left corner of the box that will represent the move.
     :return: Width this column used.
     '''
+
+    # draw background
+    background_box_count = len(move.objects)
+    drawn_objects = 0
+    for obj in object_colors.keys():
+        if obj in move.objects:
+            bg_act_verts = [
+                (start_x + (MOVE_WIDTH / background_box_count) * drawn_objects, start_y),  # left, top
+                (start_x + (MOVE_WIDTH / background_box_count) * drawn_objects + MOVE_WIDTH / background_box_count, start_y),  # right, top
+                (start_x + (MOVE_WIDTH / background_box_count) * drawn_objects + MOVE_WIDTH / background_box_count, start_y - ACTIVITY_HIGHT * 2 - OBJECT_HEIGHT * 2),  # right, top
+                (start_x + (MOVE_WIDTH / background_box_count) * drawn_objects, start_y - ACTIVITY_HIGHT * 2 - OBJECT_HEIGHT * 2),  # left, bottom
+                (start_x + (MOVE_WIDTH / background_box_count) * drawn_objects, start_y),  # left, top
+            ]
+
+            bg_act_codes = [
+                Path.MOVETO,
+                Path.LINETO,
+                Path.LINETO,
+                Path.LINETO,
+                Path.LINETO,
+            ]
+
+            log_activity_box_path = Path(bg_act_verts, bg_act_codes)
+            log_activity_box_patch = patches.PathPatch(log_activity_box_path, facecolor=object_colors[obj], lw=0)
+            ax.add_patch(log_activity_box_patch)
+            drawn_objects += 1
+
 
     # draw log activity box
     log_act_verts = [
@@ -88,7 +154,7 @@ def draw_move(move: Move, start_x: int, start_y: int, color: str, abbreviations:
     ]
 
     log_activity_box_path = Path(log_act_verts, log_act_codes)
-    log_activity_box_patch = patches.PathPatch(log_activity_box_path, facecolor=color, lw=2)
+    log_activity_box_patch = patches.PathPatch(log_activity_box_path, facecolor='none', lw=2, linestyle=linestyle)
     ax.add_patch(log_activity_box_patch)
 
     # draw log object box
@@ -111,7 +177,7 @@ def draw_move(move: Move, start_x: int, start_y: int, color: str, abbreviations:
     ]
 
     log_obj_box_path = Path(log_obj_verts, log_obj_codes)
-    log_obj_box_patch = patches.PathPatch(log_obj_box_path, facecolor=color, lw=2)
+    log_obj_box_patch = patches.PathPatch(log_obj_box_path, facecolor='none', lw=2, linestyle=linestyle)
     ax.add_patch(log_obj_box_patch)
 
     # draw model activity box
@@ -133,7 +199,7 @@ def draw_move(move: Move, start_x: int, start_y: int, color: str, abbreviations:
     ]
 
     model_activity_box_path = Path(model_act_verts, model_act_codes)
-    model_activity_box_patch = patches.PathPatch(model_activity_box_path, facecolor=color, lw=2)
+    model_activity_box_patch = patches.PathPatch(model_activity_box_path, facecolor='none', lw=2, linestyle=linestyle)
     ax.add_patch(model_activity_box_patch)
 
     # draw model object box
@@ -156,7 +222,7 @@ def draw_move(move: Move, start_x: int, start_y: int, color: str, abbreviations:
     ]
 
     model_obj_box_path = Path(model_obj_verts, model_obj_codes)
-    model_obj_box_patch = patches.PathPatch(model_obj_box_path, facecolor=color, lw=2)
+    model_obj_box_patch = patches.PathPatch(model_obj_box_path, facecolor='none', lw=2, linestyle=linestyle)
     ax.add_patch(model_obj_box_patch)
 
     # log activity text
@@ -220,12 +286,17 @@ def draw_move(move: Move, start_x: int, start_y: int, color: str, abbreviations:
 def alignment_viz(alignment: Alignment, abbreviations=dict()):
     # get all objects
     objects = []
+
     move: Move
     for move in alignment.moves:
         objects += move.objects
     # remove duplicates
     objects = set(objects)
     objects = list(objects)
+
+    # map objects to colors
+    object_colors = calculate_object_colors(alignment)
+
 
     # get minimal set of transition to have equivalent transitive hull
     connections = set()
@@ -292,20 +363,26 @@ def alignment_viz(alignment: Alignment, abbreviations=dict()):
     outgoing_points = dict()
 
     start_x_axis = BUFFER_WIDTH
+
+    #sort columns
+    for column in columns:
+        column.sort(key=lambda mv: id_of_earliest_obj(mv, objects))
+
+
     for column in columns:
         start_y_axis = 0.5 * total_y_axis_height + 0.5 * (BUFFER_HEIGHT + len(column) * (BUFFER_HEIGHT + 2 * (ACTIVITY_HIGHT + OBJECT_HEIGHT))) - BUFFER_HEIGHT
         current_move_start_x = start_x_axis
         max_used_width = 0
         for move in column:
-            color_of_move = DEFAULT_COLOR
+            linestyle_of_move = DEFAULT_LINESTYLE
             if isinstance(move, DefinedModelMove):
-                color_of_move = MODEL_MOVE_COLOR
+                linestyle_of_move = MODEL_MOVE_LINESTYLE
             if isinstance(move, SynchronousMove):
-                color_of_move = SYNC_COLOR
+                linestyle_of_move = SYNC_LINESTYLE
             if isinstance(move, LogMove):
-                color_of_move = LOG_MOVE_COLOR
-            used_width, ingoing_point, outgoing_point = draw_move(move, current_move_start_x, start_y_axis,
-                                                                  color_of_move, abbreviations, fig, ax, renderer)
+                linestyle_of_move = LOG_MOVE_LINESTYLE
+            used_width, ingoing_point, outgoing_point = draw_move(move, object_colors, current_move_start_x, start_y_axis,
+                                                                  linestyle_of_move, abbreviations, fig, ax, renderer)
             if used_width > max_used_width:
                 max_used_width = used_width
             ingoing_points[move] = ingoing_point
@@ -319,9 +396,9 @@ def alignment_viz(alignment: Alignment, abbreviations=dict()):
 
     ax.set_title(f"Alignment has cost: {alignment.get_cost()}")
 
-    sync_patch = mpatches.Patch(color=SYNC_COLOR, label='Synchronous Move')
-    model_patch = mpatches.Patch(color=MODEL_MOVE_COLOR, label='Model Move')
-    label_patch = mpatches.Patch(color=LOG_MOVE_COLOR, label='Log Move')
+    sync_patch = mpatches.Patch(linestyle=SYNC_LINESTYLE, label='Synchronous Move', linewidth=2, facecolor='none', edgecolor="black")
+    model_patch = mpatches.Patch(linestyle=MODEL_MOVE_LINESTYLE, label='Model Move', linewidth=2, facecolor='none', edgecolor="black")
+    label_patch = mpatches.Patch(linestyle=LOG_MOVE_LINESTYLE, label='Log Move', linewidth=2, facecolor='none', edgecolor="black")
     ax.legend(handles=[sync_patch, model_patch, label_patch])
 
     ax.set_xlim(0, start_x_axis - SPACE_BETWEEN_COLUMNS + BUFFER_WIDTH)
@@ -333,4 +410,6 @@ def alignment_viz(alignment: Alignment, abbreviations=dict()):
     # hide y-axis
     ax.get_yaxis().set_visible(False)
 
-    plt.show()
+    #plt.show()
+
+    return plt

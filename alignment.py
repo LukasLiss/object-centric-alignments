@@ -64,9 +64,13 @@ class UndefinedSynchronousMove(Move):
 class Alignment:
     def __init__(self):
         self.moves = []
+        self.object_types = None
 
     def __init__(self, moves: List[Move]):
         self.moves = moves
+
+    def add_object_types(self, object_types):
+        self.object_types = object_types
 
     def add_move(self, move: Move):
         self.moves.append(move)

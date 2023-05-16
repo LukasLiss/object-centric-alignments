@@ -629,6 +629,11 @@ def create_all_bindings(pn: ObjectCentricPetriNet, transition: ObjectCentricPetr
 
 def all_valid_bindings(pn: ObjectCentricPetriNet, current_marking: FrozenMarking) -> List[
     Tuple[ObjectCentricPetriNet.Transition, Binding, Move, FrozenMarking]]:
+    if not isinstance(pn, ObjectCentricPetriNet):
+        raise Exception("Parameter pn ist not of type ObjectCentricPetriNet")
+    if not isinstance(current_marking, FrozenMarking):
+        raise Exception("Parameter current_marking ist not of type FrozenMarking")
+
     all_val_bindings = []
     # for all transitions create all valid bindings
     transition: ObjectCentricPetriNet.Transition
@@ -682,6 +687,13 @@ def all_valid_bindings(pn: ObjectCentricPetriNet, current_marking: FrozenMarking
 
 
 def dijkstra(sync_net: ObjectCentricPetriNet, ini_marking: FrozenMarking, fin_marking: FrozenMarking) -> Alignment:
+    if not isinstance(ini_marking, FrozenMarking):
+        Exception("ini_marking is not of type FrozenMarking")
+    if not isinstance(fin_marking, FrozenMarking):
+        Exception("fin_marking is not of type FrozenMarking")
+    if not isinstance(ini_marking, ObjectCentricPetriNet):
+        Exception("sync_net is not of type ObjectCentricPetriNet")
+
     #print("Entering Dijkstra")
     # no state(marking) was visited yet and no marking is reachable yet
     visited = dict()
@@ -783,6 +795,12 @@ def calculate_oc_alignments(ocel: OCEL, extern_ocpn: ObjectCentricPetriNet, date
     #     #print("ocpn has to be an instance of ObjectCentricPetriNet type.")
     #     raise Exception("ocpn has to be an instance of ObjectCentricPetriNet type.")
 
+    #input check
+    if not isinstance(ocel, OCEL):
+        raise Exception("Parameter ocel is not of type OCEL.")
+    if not isinstance(extern_ocpn, ObjectCentricPetriNet):
+        raise Exception("Parameter extern_ocpn is not of type ObjectCentricPetriNet.")
+
     # For each variant use a process execution in the log to calculate an individual alignment
     alignment_dict = dict()
     # laufvariable = 0
@@ -812,6 +830,7 @@ def calculate_oc_alignments(ocel: OCEL, extern_ocpn: ObjectCentricPetriNet, date
         #print(sync_final_marking)
         # Search for shortest path in Synchronous Product Net
         alignment_for_variant = dijkstra(sync_pn, sync_initial_marking, sync_final_marking)
+        alignment_for_variant.add_object_types(ocel.process_execution_objects[indirect_id])
         alignment_dict[variant_id] = alignment_for_variant
         #print("Process execution aligned!")
     return alignment_dict
@@ -847,5 +866,6 @@ def calculate_oc_alignment_given_variant_id(ocel: OCEL, extern_ocpn: ObjectCentr
     #print(sync_final_marking)
     # Search for shortest path in Synchronous Product Net
     alignment_for_variant = dijkstra(sync_pn, sync_initial_marking, sync_final_marking)
+    alignment_for_variant.add_object_types(ocel.process_execution_objects[indirect_id])
     #print("Process execution aligned!")
     return alignment_for_variant
